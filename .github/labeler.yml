@@ -1,0 +1,21 @@
+frontend:
+  - changed-files:
+      - any-glob-to-any-file: ['frontend/**']
+
+backend:
+  - changed-files:
+      - any-glob-to-any-file: ['backend/**']
+
+docs:
+  - changed-files:
+      - any-glob-to-any-file:
+        - 'docs/**'
+        - 'docs-contributing/**'
+
+readme:
+  - changed-files:
+      - any-glob-to-any-file: ['**/*.md']
+
+cicd:
+  - changed-files:
+      - any-glob-to-any-file: ['.github/**']
