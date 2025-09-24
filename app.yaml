@@ -1,0 +1,21 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: istio-rollout-demo
+  namespace: argocd               # 👈 namespace donde tienes Argo CD
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/valkiriaaquatica/cicd  # 👈 cambia esto
+    targetRevision: test/argocd
+    path: templates/  # 👈 path donde tienes los manifests
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: rollouts-demo-istio-two
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
+    - PruneLast=true
