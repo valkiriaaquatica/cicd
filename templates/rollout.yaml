@@ -1,0 +1,61 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: istio-rollout
+  namespace: rollouts-demo-istio
+spec:
+  replicas: 3
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      app: istio-rollout
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "true"
+      labels:
+        app: istio-rollout
+    spec:
+      containers:
+      - name: istio-rollout
+        image: argoproj/rollouts-demo:yellow
+        ports:
+        - name: http
+          containerPort: 8080
+          protocol: TCP
+        resources:
+          requests:
+            memory: 32Mi
+            cpu: 5m
+  strategy:
+    canary:
+      stableService: istio-rollout-stable
+      canaryService: istio-rollout-canary
+      trafficRouting:
+        plugins:
+          argoproj-labs/gatewayAPI:
+            httpRoute: istio-rollout-route       # 👈 el que ya definiste
+            namespace: rollouts-demo-istio       # 👈 ns del HTTPRoute
+      steps:
+      - setWeight: 10
+      - pause: {}
+      - analysis:
+          templates:
+          - templateName: istio-success-rate
+          args:
+          - name: service
+            value: istio-rollout-canary
+          - name: namespace
+            value: rollouts-demo-istio
+      - setWeight: 50
+      - pause: {duration: 30s}
+      - analysis:
+          templates:
+          - templateName: istio-success-rate
+          args:
+          - name: service
+            value: istio-rollout-canary
+          - name: namespace
+            value: rollouts-demo-istio
+      - setWeight: 100
+      - pause: {}
